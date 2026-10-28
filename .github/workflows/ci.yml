@@ -1,0 +1,31 @@
+name: CI
+
+# Every push and pull request: unit tests, then the full pipeline on sample
+# data including every dbt data test. A broken model never reaches main.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Unit tests
+        run: pytest -q
+
+      - name: Run pipeline end to end on sample data (models + data tests)
+        run: python -m pipeline.run --sample --months 2025-06 2025-07
+
+      - name: Build Docker image
+        run: docker build -t divvy-pipeline .

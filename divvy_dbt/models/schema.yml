@@ -1,0 +1,56 @@
+version: 2
+
+# Data tests run on every `dbt build`. If any fail, the pipeline run fails
+# and the dashboard keeps showing the last good data.
+
+models:
+  - name: stg_trips
+    description: Typed, de-duplicated trips.
+    columns:
+      - name: ride_id
+        data_tests: [unique, not_null]
+      - name: rider_type
+        description: Unexpected values are flagged as invalid downstream; this test warns so we notice a source change.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['member', 'casual']
+              config:
+                severity: warn
+
+  - name: stg_weather
+    columns:
+      - name: weather_date
+        data_tests: [unique, not_null]
+
+  - name: int_trips_validated
+    description: Every trip with an is_valid flag and the reason it failed, if any.
+    columns:
+      - name: ride_id
+        data_tests: [unique, not_null]
+
+  - name: fct_trips
+    description: One row per valid ride, joined to that day's weather.
+    columns:
+      - name: ride_id
+        data_tests: [unique, not_null]
+      - name: duration_min
+        data_tests: [not_null]
+      - name: temp_max_f
+        description: Null would mean a ride date with no weather row (a broken join).
+        data_tests: [not_null]
+
+  - name: mart_daily_ridership
+    columns:
+      - name: ride_date
+        data_tests: [unique, not_null]
+
+  - name: mart_station_activity
+    columns:
+      - name: station_id
+        data_tests: [unique, not_null]
+
+  - name: mart_data_quality
+    columns:
+      - name: source_month
+        data_tests: [unique, not_null]

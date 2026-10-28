@@ -1,0 +1,9 @@
+[project]
+name = "divvy-pipeline"
+version = "1.0.0"
+description = "ELT pipeline: Chicago Divvy bike-share trips + weather -> DuckDB -> dbt -> Streamlit"
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

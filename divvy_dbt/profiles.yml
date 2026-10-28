@@ -1,0 +1,10 @@
+# Local warehouse = DuckDB file. To move to the cloud, add a Snowflake or
+# Databricks target here and run `dbt build --target snowflake`; the SQL models
+# stay the same.
+divvy:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: "{{ env_var('WAREHOUSE_PATH', '../data/warehouse/divvy.duckdb') }}"
+      threads: 4

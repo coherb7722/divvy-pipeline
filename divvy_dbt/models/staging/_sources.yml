@@ -1,0 +1,17 @@
+version: 2
+
+sources:
+  - name: raw
+    description: Untouched data loaded by the Python extract/load step.
+    tables:
+      - name: trips
+        description: One row per Divvy ride, all columns as text, exactly as published.
+        loaded_at_field: _loaded_at
+        columns:
+          - name: ride_id
+            data_tests: [not_null]
+      - name: weather_daily
+        description: Daily Chicago weather from the Open-Meteo archive API.
+        columns:
+          - name: date
+            data_tests: [not_null, unique]

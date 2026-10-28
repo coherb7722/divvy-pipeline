@@ -1,0 +1,9 @@
+data/
+__pycache__/
+*.pyc
+.pytest_cache/
+divvy_dbt/target/
+divvy_dbt/logs/
+divvy_dbt/dbt_packages/
+logs/
+.venv/

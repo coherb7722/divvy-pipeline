@@ -1,0 +1,25 @@
+name: divvy
+version: "1.0.0"
+config-version: 2
+profile: divvy
+
+model-paths: ["models"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+target-path: "target"
+clean-targets: ["target", "dbt_packages"]
+
+flags:
+  send_anonymous_usage_stats: false
+
+models:
+  divvy:
+    staging:
+      +materialized: view      # cheap, always fresh, just cleaning/typing
+      +schema: staging
+    intermediate:
+      +materialized: view
+      +schema: intermediate
+    marts:
+      +materialized: table     # what the dashboard reads: fast to query
+      +schema: marts

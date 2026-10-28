@@ -1,0 +1,22 @@
+# One command runs the whole thing:
+#   docker compose up --build
+# Use sample data instead of downloading:  SAMPLE=--sample docker compose up --build
+services:
+  pipeline:
+    build: .
+    command: ["sh", "-c", "python -m pipeline.run ${SAMPLE:-}"]
+    environment:
+      MONTHS: ${MONTHS:-2025-06,2025-07,2025-08}
+    volumes:
+      - ./data:/app/data          # warehouse + raw files persist on your machine
+
+  dashboard:
+    build: .
+    command: ["streamlit", "run", "dashboard/app.py", "--server.address=0.0.0.0", "--server.port=8501"]
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./data:/app/data
+    depends_on:
+      pipeline:
+        condition: service_completed_successfully   # dashboard only starts on good data
