@@ -11,7 +11,10 @@ sources:
           - name: ride_id
             data_tests: [not_null]
       - name: weather_daily
-        description: Daily Chicago weather from the Open-Meteo archive API.
+        description: >
+          Daily Chicago weather from the Open-Meteo archive API. Each month
+          includes the day before it, so a date can appear twice here;
+          stg_weather de-duplicates.
         columns:
           - name: date
-            data_tests: [not_null, unique]
+            data_tests: [not_null]

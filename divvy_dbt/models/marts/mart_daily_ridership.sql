@@ -16,5 +16,11 @@ select
 from {{ ref('stg_weather') }} w
 left join {{ ref('fct_trips') }} f
     on f.ride_date = w.weather_date
+-- Only days inside the loaded months. The extra boundary day (e.g. May 31)
+-- holds just the few rides that crossed midnight, so it would look like a
+-- near-empty day on the chart.
+where strftime(w.weather_date, '%Y-%m') in (
+    select distinct _source_month from {{ source('raw', 'trips') }}
+)
 group by all
 order by ride_date

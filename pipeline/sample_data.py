@@ -30,7 +30,8 @@ STATIONS = [
 
 def make_weather(month: str, rng: random.Random) -> dict:
     start, end = month_bounds(month)
-    days = pd.date_range(start, end)
+    # Like the real extract, include the day before the month (boundary rides)
+    days = pd.date_range(pd.Timestamp(start) - pd.Timedelta(days=1), end)
     tmax = [round(rng.gauss(82, 7), 1) for _ in days]
     return {
         "latitude": config.CHICAGO_LAT, "longitude": config.CHICAGO_LON,
@@ -48,6 +49,23 @@ def make_trips(month: str, weather: dict, rng: random.Random, rides_per_day: int
     rows = []
     daily = weather["daily"]
     for day, tmax, rain in zip(daily["time"], daily["temperature_2m_max"], daily["precipitation_sum"]):
+        if not day.startswith(month):
+            # The day before the month: only a few late-night rides that end
+            # after midnight land in this month's file, exactly like real Divvy data.
+            for _ in range(3):
+                s, e = rng.sample(STATIONS, 2)
+                start = datetime.fromisoformat(day) + timedelta(hours=23, minutes=rng.randint(45, 58))
+                rows.append({
+                    "ride_id": uuid.UUID(int=rng.getrandbits(128)).hex[:16].upper(),
+                    "rideable_type": "classic_bike",
+                    "started_at": start.strftime("%Y-%m-%d %H:%M:%S.000"),
+                    "ended_at": (start + timedelta(minutes=20)).strftime("%Y-%m-%d %H:%M:%S.000"),
+                    "start_station_name": s[0], "start_station_id": s[1],
+                    "end_station_name": e[0], "end_station_id": e[1],
+                    "start_lat": s[2], "start_lng": s[3], "end_lat": e[2], "end_lng": e[3],
+                    "member_casual": "casual",
+                })
+            continue
         # Rain suppresses ridership, warm days boost it: gives the dashboard a real signal
         n = int(rides_per_day * (1 - min(rain, 1.0) * 0.6) * (0.7 + max(0, tmax - 60) / 100))
         is_weekend = datetime.fromisoformat(day).weekday() >= 5

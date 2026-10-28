@@ -11,6 +11,7 @@ import io
 import json
 import zipfile
 from calendar import monthrange
+from datetime import date, timedelta
 from pathlib import Path
 
 import requests
@@ -60,6 +61,10 @@ def extract_weather(month: str) -> Path:
         log.info("Weather %s already landed, skipping", month)
         return out
     start, end = month_bounds(month)
+    # Divvy files each ride under the month it ENDED, so a ride starting late
+    # on the last day of the previous month is in this month's file. Fetch one
+    # extra day before the month so every ride has a weather row.
+    start = (date.fromisoformat(start) - timedelta(days=1)).isoformat()
     params = {
         "latitude": config.CHICAGO_LAT,
         "longitude": config.CHICAGO_LON,
