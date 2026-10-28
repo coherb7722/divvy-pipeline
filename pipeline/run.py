@@ -40,6 +40,8 @@ def main(argv=None) -> int:
     log.info("Run %s starting for months %s (sample=%s)", run_id, args.months, args.sample)
 
     if args.sample:
+        # Keep fake files out of real dashboard
+        config.RAW_DIR = config.DATA_DIR / "raw_sample"
         sample_data.generate(args.months)
 
     con = load.connect()
